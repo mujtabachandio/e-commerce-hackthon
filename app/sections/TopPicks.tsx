@@ -101,16 +101,19 @@ const TopPicks: React.FC = () => {
       </div>
 
       {/* Product List */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-        {products.map((product, index) => (
-          <ProductCard
-            key={index}
-            title={product.title}
-            price={product.price}
-            imageSrc={product.imageSrc}
-          />
-        ))}
-      </div>
+      
+      <Link href="/shop" passHref>
+  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+    {products.map((product, index) => (
+      <ProductCard
+        key={index}
+        title={product.title}
+        price={product.price}
+        imageSrc={product.imageSrc}
+      />
+    ))}
+  </div>
+</Link>
 
       {/* View More */}
       <div className="flex justify-center mt-8">
