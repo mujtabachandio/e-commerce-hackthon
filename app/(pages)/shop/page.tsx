@@ -1,60 +1,49 @@
 "use client";
 import Link from "next/link";
 import Image from "next/image";
+import { useEffect, useState } from "react";
+import { client } from "@/sanity/lib/client"; // Import client
+import imageUrlBuilder from '@sanity/image-url'; // Import imageUrlBuilder
 
-const products = [
-  {
-    id: 1,
-    name: "Trenton modular sofa_3",
-    price: "Rs. 25,000.00",
-    image: "/s1.jpg",
-  },
-  {
-    id: 2,
-    name: "Granite dining table with dining chair",
-    price: "Rs. 25,000.00",
-    image: "/s3.jfif",
-  },
-  {
-    id: 3,
-    name: "Outdoor bar table and stool",
-    price: "Rs. 25,000.00",
-    image: "/s4.jfif",
-  },
-  {
-    id: 4,
-    name: "Plain console with teak mirror",
-    price: "Rs. 18,000.00",
-    image: "/s2.webp",
-  },
-  {
-    id: 5,
-    name: "Plain console with teak mirror",
-    price: "Rs. 33,000.00",
-    image: "/t1.jfif",
-  },
-  {
-    id: 6,
-    name: "Plain console with teak mirror",
-    price: "Rs. 12,000.00",
-    image: "/t2.jfif",
-  },
-  {
-    id: 7,
-    name: "Plain console with teak mirror",
-    price: "Rs. 21,000.00",
-    image: "/t3.jfif",
-  },
-  {
-    id: 8,
-    name: "Plain console with teak mirror",
-    price: "Rs. 2,000.00",
-    image: "/t4.jfif",
-  },
+const builder = imageUrlBuilder(client);
 
-];
+function urlFor(source: { asset: { _ref: string; _type: string } }): ReturnType<typeof builder.image> {
+  return builder.image(source);
+}
+
+// Define types for Product
+interface Product {
+  _id: string;
+  name: string;
+  price: string;
+  image: {
+    asset: {
+      _ref: string;
+      _type: string;
+    };
+  }; // Make sure to use the correct type for the image reference
+}
+
+// Fetch products from Sanity
+const fetchProducts = async (): Promise<Product[]> => {
+  const query = "*[_type == 'product']";
+  const products = await client.fetch(query);
+  return products;
+};
 
 export default function Shop() {
+  // Define state with the Product type
+  const [products, setProducts] = useState<Product[]>([]);
+
+  // Fetch data on mount
+  useEffect(() => {
+    const getData = async () => {
+      const data = await fetchProducts();
+      setProducts(data);
+    };
+    getData();
+  }, []);
+
   return (
     <div>
       {/* Header Section */}
@@ -74,11 +63,11 @@ export default function Shop() {
       <div className="container mx-auto px-4 lg:px-20 py-12">
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
           {products.map((product) => (
-            <Link key={product.id} href={`/shop/${product.id}`}>
+            <Link key={product._id} href={`/shop/${product._id}`}>
               <div className="text-center cursor-pointer hover:shadow-lg p-4">
                 <div className="w-full h-48 mb-4 flex justify-center items-center bg-gray-100">
                   <Image
-                    src={product.image}
+                    src={urlFor(product.image).width(300).height(200).url()} // Fetch image URL correctly
                     alt={product.name}
                     width={300}
                     height={200}
@@ -92,6 +81,7 @@ export default function Shop() {
           ))}
         </div>
       </div>
+
       {/* Pagination Section */}
       <div className="flex justify-center gap-4 py-12 flex-wrap">
         <Link href="/shop?page=1">
@@ -128,7 +118,7 @@ export default function Shop() {
         </Link>
       </div>
 
-           {/* Extra Section */}
+      {/* Extra Section */}
       <div className="container mx-auto px-4 py-12 mt-16 bg-gray-300">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8 text-center">
           <div>
@@ -148,7 +138,6 @@ export default function Shop() {
 
       {/* Footer spacing */}
       <div className="h-16"></div>
-
     </div>
   );
 }
