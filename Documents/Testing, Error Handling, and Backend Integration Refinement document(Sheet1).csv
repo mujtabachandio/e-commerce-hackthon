@@ -1,0 +1,11 @@
+Test Case ID,Test Case Description ,Test Steps,Expected Result ,Actual Result,Status ,Severity Level ,Assigned To,Remarks 
+TC001,check match with figma design ,checking the UI ,95%,88%,passed ,medium,----,90% matching 
+TC002,check all pages available in figma,visiting all routes/pages,All should be there ,all figma design pages are there ,passed ,medium,----,no issues 
+TC003,API used to migrate data,checking the script file and schemas ,used API to migrate data,everything is okay ,passed ,high ,----,worked as expected 
+TC004,check product page ,visiting product to check ,products should show,products showing ,passed ,high ,----,works currently 
+TC005,check dynamic page ,clicking on product cards ,dynamic page should work ,dynamic page working ,passed ,medium,----,works currently 
+TC006,add to cart functionality ,using add to cart btn,product should add in cart,products not updating in cart,failed ,low,---,functionality not add
+TC007,check components ,visiting all components ,all component be there ,all components available ,passed ,medium,----,working fine
+TC008,check filter functionality in production page,using filter btns ,should work correctly ,working all fine,passed ,medium,----,good condition 
+TC009,checking responsiveness ,opening and testing in different devices ,shshould be responsive ,website completely responsive ,passed ,high ,---,Test successful
+TC010,speed of website ,putting loads on browser ,website should not flicker ,working all fine,promoted ,medium,----,nicely handled 
