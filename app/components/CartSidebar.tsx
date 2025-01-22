@@ -34,7 +34,7 @@ export default function CartSidebar({
 
   return (
     <div
-      className={`fixed top-0 right-0 h-full w-80 bg-white shadow-lg transition-transform transform ease-in-out duration-300 ${
+      className={`fixed top-0 right-0 h-full w-80 bg-white shadow-lg transition-transform transform ease-in-out duration-300 z-50 ${
         isVisible ? "translate-x-0" : "translate-x-full"
       }`}
     >
