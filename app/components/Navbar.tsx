@@ -1,23 +1,40 @@
-"use client"
-import React, { useState } from "react";
+"use client";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { FaRegUser, FaSearch, FaHeart, FaShoppingCart, FaBars ,} from "react-icons/fa";
-import { AiOutlineClose, AiOutlineHeart } from "react-icons/ai";
-import Image from "next/image";  // Import Image component
+import { FaRegUser, FaSearch, FaHeart, FaShoppingCart, FaBars } from "react-icons/fa";
+import { AiOutlineClose } from "react-icons/ai";
+import CartSidebar from "./CartSidebar"; // Adjust path as needed
 
 const Navbar = () => {
-  const [isOpen, setIsOpen] = useState(false); // Cart Sidebar state
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false); // Mobile menu state
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isCartSidebarVisible, setCartSidebarVisible] = useState(false);
+  const [cart, setCart] = useState<{ name: string; quantity: number }[]>([]); // Empty array initially
   const pathname = usePathname();
 
-  const openCart = () => setIsOpen(true);
-  const closeCart = () => setIsOpen(false);
+  // Load cart from localStorage on component mount
+  useEffect(() => {
+    const savedCart = localStorage.getItem("cart");
+    if (savedCart) {
+      setCart(JSON.parse(savedCart)); // Parse the cart from localStorage
+    }
+  }, []);
+
+  // Update localStorage whenever the cart changes
+  useEffect(() => {
+    if (cart.length > 0) {
+      localStorage.setItem("cart", JSON.stringify(cart)); // Save cart to localStorage
+    }
+  }, [cart]);
 
   const toggleMobileMenu = () => setIsMobileMenuOpen(!isMobileMenuOpen);
   const closeMobileMenu = () => setIsMobileMenuOpen(false);
+  const toggleCartSidebar = () => setCartSidebarVisible(!isCartSidebarVisible);
 
-  // Function to add active class to current path
+  const handleUpdateCart = (updatedCart: { name: string; quantity: number }[]) => {
+    setCart(updatedCart);
+  };
+
   const linkClass = (path: string) =>
     pathname === path
       ? "text-gray-800 font-bold duration-300 border-b-2 border-gray-800 pb-1"
@@ -25,10 +42,18 @@ const Navbar = () => {
 
   const NavLinks = () => (
     <>
-      <Link href="/" className={linkClass("/")} onClick={closeMobileMenu}>Home</Link>
-      <Link href="/shop" className={linkClass("/shop")} onClick={closeMobileMenu}>Shop</Link>
-      <Link href="/about" className={linkClass("/about")} onClick={closeMobileMenu}>About</Link>
-      <Link href="/contact" className={linkClass("/contact")} onClick={closeMobileMenu}>Contact</Link>
+      <Link href="/" className={linkClass("/")} onClick={closeMobileMenu}>
+        Home
+      </Link>
+      <Link href="/shop" className={linkClass("/shop")} onClick={closeMobileMenu}>
+        Shop
+      </Link>
+      <Link href="/about" className={linkClass("/about")} onClick={closeMobileMenu}>
+        About
+      </Link>
+      <Link href="/contact" className={linkClass("/contact")} onClick={closeMobileMenu}>
+        Contact
+      </Link>
     </>
   );
 
@@ -37,15 +62,16 @@ const Navbar = () => {
       <Link href="/account">
         <FaRegUser className="w-6 h-6 cursor-pointer duration-300 hover:text-gray-600" />
       </Link>
-      <Link href="/search">
+      <Link href="#">
         <FaSearch className="w-6 h-6 cursor-pointer duration-300 hover:text-gray-600" />
       </Link>
-      <Link href="/product">
+      <Link href="#">
         <FaHeart className="w-6 h-6 cursor-pointer duration-300 hover:text-gray-600" />
       </Link>
-      <button onClick={openCart} className="p-2 bg-black text-white rounded-md">
-        <FaShoppingCart className="w-6 h-6" />
-      </button>
+      <FaShoppingCart
+        className="w-6 h-6 cursor-pointer"
+        onClick={toggleCartSidebar}
+      />
     </div>
   );
 
@@ -78,64 +104,22 @@ const Navbar = () => {
         )}
 
         <div className="flex items-center space-x-4">
-          <Link href="/product">
-            <AiOutlineHeart className="w-6 h-6" />
-          </Link>
-          <button onClick={openCart} className="p-2 bg-black text-white rounded-md">
+          <button
+            onClick={toggleCartSidebar}
+            className="p-2 bg-black text-white rounded-md"
+          >
             <FaShoppingCart className="w-6 h-6" />
           </button>
         </div>
       </div>
 
       {/* Cart Sidebar */}
-      <div
-        className={`fixed top-0 right-0 h-full w-64 md:w-96 bg-white shadow-md transition-transform transform z-50 ${isOpen ? "translate-x-0" : "translate-x-full"}`}
-      >
-        <div className="p-4">
-          {/* Close Button */}
-          <button onClick={closeCart} className="text-2xl">
-            <AiOutlineClose />
-          </button>
-
-          {/* Cart Content */}
-          <div className="mt-4">
-            <div className="flex items-center mb-4">
-              <Image
-                src="/main2.png"
-                alt="Asgaard sofa"
-                width={64}
-                height={64}
-                className="object-cover"
-              />
-              <div className="ml-4 flex-grow">
-                <p>Asgaard sofa</p>
-                <p>
-                  1 x <span className="text-yellow-500">Rs. 250,000.00</span>
-                </p>
-              </div>
-              <button
-                onClick={() => {
-                  // Logic to remove item
-                }}
-                className="text-red-500"
-              >
-                x
-              </button>
-            </div>
-
-            {/* Subtotal */}
-            <p>
-              Subtotal: <span className="text-yellow-500">Rs. 250,000.00</span>
-            </p>
-
-            {/* View Cart & Checkout Buttons */}
-            <div className="mt-4 flex space-x-2">
-              <Link href="/cart" className="flex-1 p-2 bg-black text-white text-center">View Cart</Link>
-              <Link href="/checkout" className="flex-1 p-2 bg-black text-white text-center">Checkout</Link>
-            </div>
-          </div>
-        </div>
-      </div>
+      <CartSidebar
+        cart={cart}
+        isVisible={isCartSidebarVisible}
+        onClose={() => setCartSidebarVisible(false)}
+        onUpdateCart={handleUpdateCart}
+      />
     </nav>
   );
 };
