@@ -59,11 +59,32 @@ export default function ProductPage({ params }: { params: { id: string } }) {
   const handleAddToCart = () => {
     if (!product) return;
 
+    // Fetch existing cart data
     const cart = JSON.parse(localStorage.getItem("cart") || "[]");
-    const cartItem = { name: product.name, quantity: 1 };
-    const updatedCart = [...cart, cartItem];
 
-    localStorage.setItem("cart", JSON.stringify(updatedCart));
+    // Check if the product already exists in the cart
+    const existingItem = cart.find((item: { name: string }) => item.name === product.name);
+
+    if (existingItem) {
+      // If the product exists, increase its quantity
+      const updatedCart = cart.map((item: { name: string; quantity: number }) =>
+        item.name === product.name
+          ? { ...item, quantity: item.quantity + 1 }
+          : item
+      );
+      localStorage.setItem("cart", JSON.stringify(updatedCart));
+    } else {
+      // Add new product to the cart
+      const cartItem = {
+        name: product.name,
+        price: product.price,
+        image: urlFor(product.image),
+        quantity: 1,
+      };
+      const updatedCart = [...cart, cartItem];
+      localStorage.setItem("cart", JSON.stringify(updatedCart));
+    }
+
     alert(`${product.name} added to cart.`);
   };
 

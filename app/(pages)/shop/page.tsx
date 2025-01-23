@@ -34,11 +34,15 @@ export default function Shop() {
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid"); // State for view mode
   const [sortOption, setSortOption] = useState<string>("Default"); // State for sorting
   const [displayCount, setDisplayCount] = useState<number>(16); // State for product count
+  const [loading, setLoading] = useState<boolean>(true); // Loading state
 
   useEffect(() => {
     const getData = async () => {
       const data = await fetchProducts();
-      setProducts(data);
+      setTimeout(() => {
+        setProducts(data);
+        setLoading(false); // Stop loading after 2 seconds
+      }, 2000); // Simulate 2-second delay
     };
     getData();
   }, []);
@@ -93,17 +97,13 @@ export default function Shop() {
             </button>
             <button
               onClick={() => setViewMode("grid")}
-              className={`p-2 rounded-md ${
-                viewMode === "grid" ? "bg-gray-200" : "hover:bg-gray-100"
-              }`}
+              className={`p-2 rounded-md ${viewMode === "grid" ? "bg-gray-200" : "hover:bg-gray-100"}`}
             >
               <FiGrid size={20} />
             </button>
             <button
               onClick={() => setViewMode("list")}
-              className={`p-2 rounded-md ${
-                viewMode === "list" ? "bg-gray-200" : "hover:bg-gray-100"
-              }`}
+              className={`p-2 rounded-md ${viewMode === "list" ? "bg-gray-200" : "hover:bg-gray-100"}`}
             >
               <FiList size={20} />
             </button>
@@ -139,31 +139,46 @@ export default function Shop() {
           </div>
         </div>
 
-        {/* Products Section */}
-        <div
-          className={`grid ${
-            viewMode === "grid" ? "grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4" : "grid-cols-1"
-          } gap-8 mt-8`}
-        >
-          {products.slice(0, displayCount).map((product) => (
-            <Link key={product._id} href={`/shop/${product._id}`}>
-              <div className="text-center cursor-pointer hover:shadow-lg p-4">
-                <div className="w-full h-48 mb-4 flex justify-center items-center bg-gray-100">
-                  <Image
-                    src={urlFor(product.image)}
-                    alt={product.name}
-                    width={300}
-                    height={200}
-                    className="object-contain max-w-full max-h-full"
-                  />
+        {/* Show Loading Spinner or Products */}
+        {loading ? (
+          <div className="flex justify-center items-center py-12">
+            <Image
+              src="/loading.gif" // Use your loading GIF here
+              alt="Loading..."
+              width={150}
+              height={150}
+            />
+          </div>
+        ) : (
+          <div
+            className={`grid ${
+              viewMode === "grid"
+                ? "grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4"
+                : "grid-cols-1"
+            } gap-8 mt-8`}
+          >
+            {products.slice(0, displayCount).map((product) => (
+              <Link key={product._id} href={`/shop/${product._id}`}>
+                <div className="text-center cursor-pointer hover:shadow-lg p-4">
+                  <div className="w-full h-48 mb-4 flex justify-center items-center bg-gray-100">
+                    <Image
+                      src={urlFor(product.image)}
+                      alt={product.name}
+                      width={300}
+                      height={200}
+                      className="object-contain max-w-full max-h-full"
+                    />
+                  </div>
+                  <h3 className="text-gray-700 font-medium mb-2">{product.name}</h3>
+                  <p className="text-black font-semibold">Price:{product.price}</p>
                 </div>
-                <h3 className="text-gray-700 font-medium mb-2">{product.name}</h3>
-                <p className="text-black font-semibold">{product.price}</p>
-              </div>
-            </Link>
-          ))}
-        </div>
-          {/* Extra Section */}
+              </Link>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* Extra Section */}
       <div className="container mx-auto px-4 py-12 mt-16 bg-gray-300">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8 text-center">
           <div>
@@ -180,8 +195,6 @@ export default function Shop() {
           </div>
         </div>
       </div>
-      </div>
-      
     </div>
   );
 }

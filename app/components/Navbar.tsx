@@ -4,7 +4,6 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { FaRegUser, FaSearch, FaHeart, FaShoppingCart, FaBars } from "react-icons/fa";
 import { AiOutlineClose } from "react-icons/ai";
-import CartSidebar from "./CartSidebar"; // Adjust path as needed
 
 const Navbar = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -31,9 +30,6 @@ const Navbar = () => {
   const closeMobileMenu = () => setIsMobileMenuOpen(false);
   const toggleCartSidebar = () => setCartSidebarVisible(!isCartSidebarVisible);
 
-  const handleUpdateCart = (updatedCart: { name: string; quantity: number }[]) => {
-    setCart(updatedCart);
-  };
 
   const linkClass = (path: string) =>
     pathname === path
@@ -68,10 +64,9 @@ const Navbar = () => {
       <Link href="#">
         <FaHeart className="w-6 h-6 cursor-pointer duration-300 hover:text-gray-600" />
       </Link>
-      <FaShoppingCart
-        className="w-6 h-6 cursor-pointer"
-        onClick={toggleCartSidebar}
-      />
+      <Link href="/cart">
+        <FaShoppingCart className="w-6 h-6 cursor-pointer"/>
+      </Link>
     </div>
   );
 
@@ -113,13 +108,7 @@ const Navbar = () => {
         </div>
       </div>
 
-      {/* Cart Sidebar */}
-      <CartSidebar
-        cart={cart}
-        isVisible={isCartSidebarVisible}
-        onClose={() => setCartSidebarVisible(false)}
-        onUpdateCart={handleUpdateCart}
-      />
+     
     </nav>
   );
 };

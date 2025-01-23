@@ -1,10 +1,51 @@
 "use client";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 
 const Checkout = () => {
   const [paymentMethod, setPaymentMethod] = useState("bank");
+  const [cartItems, setCartItems] = useState<CartItem[]>([]); // State to store cart items
+  const [showPopup, setShowPopup] = useState(false); // State for showing pop-up
+  const [isFormValid, setIsFormValid] = useState(false); // State to track form validity
+
+  interface CartItem {
+    name: string;
+    price: string;
+    quantity: number;
+  }
+
+  useEffect(() => {
+    // Fetching cart items from localStorage
+    const storedCart = JSON.parse(localStorage.getItem("cart") || "[]");
+    setCartItems(storedCart);
+  }, []);
+
+  // Calculate the total price dynamically
+  const totalPrice = cartItems.reduce(
+    (total, item) => total + parseInt(item.price) * item.quantity,
+    0
+  );
+
+  const handlePlaceOrder = () => {
+    // Show the pop-up when the button is clicked
+    setShowPopup(true);
+
+    // Optionally, you can hide the pop-up after a few seconds
+    setTimeout(() => {
+      setShowPopup(false);
+    }, 5000); // 5 seconds
+  };
+
+  const handleInputChange = () => {
+    // Check if all required inputs are filled and update the form validity state
+    const form = document.querySelector("form");
+    if (form && form.checkValidity()) {
+      setIsFormValid(true);
+    } else {
+      setIsFormValid(false);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-gray-100 flex flex-col">
@@ -48,10 +89,11 @@ const Checkout = () => {
             {/* Billing Details Form */}
             <div>
               <h2 className="text-2xl font-bold mb-4">Billing Details</h2>
-              <form>
+              <form onChange={handleInputChange}>
                 <div className="mb-4">
                   <label className="block text-gray-700">First Name</label>
                   <input
+                    required
                     type="text"
                     className="w-full p-3 border rounded mt-1"
                     placeholder="First Name"
@@ -60,6 +102,7 @@ const Checkout = () => {
                 <div className="mb-4">
                   <label className="block text-gray-700">Last Name</label>
                   <input
+                    required
                     type="text"
                     className="w-full p-3 border rounded mt-1"
                     placeholder="Last Name"
@@ -67,7 +110,8 @@ const Checkout = () => {
                 </div>
                 <div className="mb-4">
                   <label className="block text-gray-700">Country / Region</label>
-                  <select className="w-full p-3 border rounded mt-1">
+                  <select required className="w-full p-3 border rounded mt-1">
+                    <option value="">Select a Country</option>
                     <option>Pakistan</option>
                     <option>USA</option>
                     <option>UAE</option>
@@ -77,6 +121,7 @@ const Checkout = () => {
                 <div className="mb-4">
                   <label className="block text-gray-700">Street Address</label>
                   <input
+                    required
                     type="text"
                     className="w-full p-3 border rounded mt-1"
                     placeholder="Street Address"
@@ -86,6 +131,7 @@ const Checkout = () => {
                   <div>
                     <label className="block text-gray-700">City</label>
                     <input
+                      required
                       type="text"
                       className="w-full p-3 border rounded mt-1"
                       placeholder="City"
@@ -94,6 +140,7 @@ const Checkout = () => {
                   <div>
                     <label className="block text-gray-700">ZIP Code</label>
                     <input
+                      required
                       type="text"
                       className="w-full p-3 border rounded mt-1"
                       placeholder="ZIP Code"
@@ -103,6 +150,7 @@ const Checkout = () => {
                 <div className="mb-4">
                   <label className="block text-gray-700">Phone</label>
                   <input
+                    required
                     type="tel"
                     className="w-full p-3 border rounded mt-1"
                     placeholder="Phone Number"
@@ -111,6 +159,7 @@ const Checkout = () => {
                 <div className="mb-4">
                   <label className="block text-gray-700">Email Address</label>
                   <input
+                    required
                     type="email"
                     className="w-full p-3 border rounded mt-1"
                     placeholder="Email Address"
@@ -123,13 +172,15 @@ const Checkout = () => {
             <div>
               <h2 className="text-2xl font-bold mb-4">Your Order</h2>
               <div className="mb-6">
-                <div className="flex justify-between mb-2">
-                  <span>Asgaard Sofa x 1</span>
-                  <span>Rs. 250,000.00</span>
-                </div>
+                {cartItems.map((item) => (
+                  <div key={item.name} className="flex justify-between mb-2">
+                    <span>{item.name} x {item.quantity}</span>
+                    <span>Rs. {parseInt(item.price) * item.quantity}</span>
+                  </div>
+                ))}
                 <div className="flex justify-between text-lg font-semibold">
                   <span>Total</span>
-                  <span>Rs. 250,000.00</span>
+                  <span>Rs. {totalPrice}</span>
                 </div>
               </div>
 
@@ -160,16 +211,21 @@ const Checkout = () => {
                   <div>
                     <input
                       type="radio"
-                      id="cod"
+                      id="cash"
                       name="paymentMethod"
-                      value="cod"
-                      checked={paymentMethod === "cod"}
-                      onChange={() => setPaymentMethod("cod")}
+                      value="cash"
+                      checked={paymentMethod === "cash"}
+                      onChange={() => setPaymentMethod("cash")}
                       className="mr-2"
                     />
-                    <label htmlFor="cod" className="text-gray-700">
-                      Cash on Delivery
+                    <label htmlFor="cash" className="text-gray-700">
+                      Cash On Delivery
                     </label>
+                    {paymentMethod === "cash" && (
+                      <p className="text-gray-600 text-sm mt-1">
+                        Pay with cash on delivery. Your order will be shipped once the payment is made.
+                      </p>
+                    )}
                   </div>
                 </div>
               </div>
@@ -177,7 +233,10 @@ const Checkout = () => {
               {/* Place Order Button */}
               <button
                 type="button"
-                className="w-full bg-black text-white hover:bg-gray-700 duration-300 font-bold py-3 rounded"
+                disabled={!isFormValid}
+                className={`w-full bg-black text-white hover:bg-gray-700 duration-300 font-bold py-3 rounded ${!isFormValid ? "opacity-50 cursor-not-allowed" : ""}`}
+                onClick={handlePlaceOrder}
+                title={!isFormValid ? "Please fill all required fields" : "Good to go!"} 
               >
                 Place Order
               </button>
@@ -185,12 +244,34 @@ const Checkout = () => {
           </div>
         </div>
       </div>
+
+      {/* Pop-up for Order Confirmation */}
+      {showPopup && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
+          <div className="bg-white p-8 rounded-lg shadow-lg text-center max-w-sm w-full">
+            <h2 className="text-2xl font-semibold mb-4">Thank You for Shopping!</h2>
+            <div className="flex justify-center items-center">
+              <div className="felx justify-center">
+                <Image src="/tick.gif" alt="Checkmark" width={150} height={150} />
+              </div>
+            </div>
+            <p className="text-gray-700">Your order has been placed successfully.</p>
+            <button
+              onClick={() => setShowPopup(false)}
+              className="mt-4 text-white bg-green-500 hover:bg-green-600 py-2 px-4 rounded"
+            >
+              Close
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Horizontal Headings Section */}
       <div className="container mx-auto px-4 lg:px-20 py-20 bg-[#9F9F9F]">
         <div className="flex justify-between items-center">
           <div className="text-center">
             <h3 className="text-3xl font-bold mb-2">Free Delivery</h3>
-            <p className="text-gray-600">For all oders over $50, consectetur adipim scing elit.</p>
+            <p className="text-gray-600">For all orders over $50, consectetur adipim scing elit.</p>
           </div>
           <div className="text-center">
             <h3 className="text-3xl font-bold mb-2">90 Days Return</h3>
