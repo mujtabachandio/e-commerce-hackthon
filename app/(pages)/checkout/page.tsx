@@ -2,6 +2,7 @@
 import { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { client } from "@/sanity/lib/client";
 
 const Checkout = () => {
   const [paymentMethod, setPaymentMethod] = useState("bank");
@@ -10,6 +11,7 @@ const Checkout = () => {
   const [isFormValid, setIsFormValid] = useState(false); // State to track form validity
 
   interface CartItem {
+    _id: number;
     name: string;
     price: string;
     quantity: number;
@@ -27,14 +29,43 @@ const Checkout = () => {
     0
   );
 
-  const handlePlaceOrder = () => {
-    // Show the pop-up when the button is clicked
-    setShowPopup(true);
+  const handlePlaceOrder = async () => {
+    const form = document.querySelector('form');
+    const formData = new FormData(form as HTMLFormElement);
 
-    // Optionally, you can hide the pop-up after a few seconds
-    setTimeout(() => {
-      setShowPopup(false);
-    }, 5000); // 5 seconds
+    const orderData = {
+      _type: 'order',
+      firstName: formData.get('firstName'),
+      lastName: formData.get('lastName'),
+      address: formData.get('address'),
+      city: formData.get('city'),
+      zipCode: formData.get('zipCode'),
+      phone: formData.get('phone'),
+      email: formData.get('email'),
+      cartItems: cartItems.map(item => ({
+        _type: "reference",
+        _ref: item._id,
+      })),
+      total: totalPrice,
+      status: "pending",
+    };
+
+    try {
+      await client.create(orderData);
+      console.log("Order created successfully:", orderData);
+
+      // Clear the cart and show the pop-up
+      localStorage.removeItem("cart");
+      setCartItems([]);
+      setShowPopup(true);
+
+      // Optionally, you can hide the pop-up after a few seconds
+      setTimeout(() => {
+        setShowPopup(false);
+      }, 5000); // 5 seconds
+    } catch (error) {
+      console.error("Error creating order:", error);
+    }
   };
 
   const handleInputChange = () => {
@@ -95,6 +126,7 @@ const Checkout = () => {
                   <input
                     required
                     type="text"
+                    name="firstName"
                     className="w-full p-3 border rounded mt-1"
                     placeholder="First Name"
                   />
@@ -104,6 +136,7 @@ const Checkout = () => {
                   <input
                     required
                     type="text"
+                    name="lastName"
                     className="w-full p-3 border rounded mt-1"
                     placeholder="Last Name"
                   />
@@ -123,6 +156,7 @@ const Checkout = () => {
                   <input
                     required
                     type="text"
+                    name="address"
                     className="w-full p-3 border rounded mt-1"
                     placeholder="Street Address"
                   />
@@ -133,6 +167,7 @@ const Checkout = () => {
                     <input
                       required
                       type="text"
+                      name="city"
                       className="w-full p-3 border rounded mt-1"
                       placeholder="City"
                     />
@@ -142,6 +177,7 @@ const Checkout = () => {
                     <input
                       required
                       type="text"
+                      name="zipCode"
                       className="w-full p-3 border rounded mt-1"
                       placeholder="ZIP Code"
                     />
@@ -152,6 +188,7 @@ const Checkout = () => {
                   <input
                     required
                     type="tel"
+                    name="phone"
                     className="w-full p-3 border rounded mt-1"
                     placeholder="Phone Number"
                   />
@@ -161,6 +198,7 @@ const Checkout = () => {
                   <input
                     required
                     type="email"
+                    name="email"
                     className="w-full p-3 border rounded mt-1"
                     placeholder="Email Address"
                   />
